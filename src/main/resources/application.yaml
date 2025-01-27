@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/capstone
+    username: capstone
+    password: MyCapstonePassword
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: "toolscheduler-group"
+      auto-offset-reset: "earliest"
+      properties:
+        spring.json.trusted.packages: "*"
+    listener:
+      ack-mode: record
+    template:
+      default-topic: "tool-scan-ingestion"
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+# Use a consistent prefix for custom app settings
+app:
+  kafka:
+    topics:
+      ingestion: "tool-scan-ingestion"
+      status: "tool-scan-status"
