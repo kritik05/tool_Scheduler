@@ -25,18 +25,15 @@ public class Credential {
     @Column(nullable = false)
     private String pat;
 
-    // Default constructor
     public Credential() {
     }
 
-    // All-args constructor
     public Credential(String owner, String repo, String pat) {
         this.owner = owner;
         this.repo = repo;
         this.pat = pat;
     }
 
-    // Getters and setters
     public String getOwner() {
         return owner;
     }
@@ -94,17 +91,14 @@ public class Credential {
         private String owner;
         private String repo;
 
-        // Default constructor
         public CredentialId() {
         }
 
-        // All-args constructor
         public CredentialId(String owner, String repo) {
             this.owner = owner;
             this.repo = repo;
         }
 
-        // Getters and setters
         public String getOwner() {
             return owner;
         }

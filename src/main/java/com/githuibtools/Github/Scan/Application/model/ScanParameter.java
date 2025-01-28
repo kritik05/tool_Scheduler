@@ -5,5 +5,4 @@ public enum ScanParameter {
     DEEP,     // e.g. for code scanning: deep analysis
     DEPENDENCIES,  // for Dependabot scans
     SECRETS        // for secret scans
-    // Add more as needed
 }

@@ -11,7 +11,6 @@ public class ElasticsearchService {
 
     private final ScanResultRepository scanResultRepository;
 
-    // Constructor injection (manually defined, instead of using Lombok @RequiredArgsConstructor)
     public ElasticsearchService(ScanResultRepository scanResultRepository) {
         this.scanResultRepository = scanResultRepository;
     }
@@ -24,6 +23,4 @@ public class ElasticsearchService {
         return scanResultRepository.findById(id);
     }
 
-    // Add custom search methods if needed
-    // e.g. findByOwnerAndRepo, etc.
 }

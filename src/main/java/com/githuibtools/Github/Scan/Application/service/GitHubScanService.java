@@ -1,7 +1,9 @@
 package com.githuibtools.Github.Scan.Application.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.githuibtools.Github.Scan.Application.model.ScanEvent;
-import com.githuibtools.Github.Scan.Application.model.ScanParameter;
 import com.githuibtools.Github.Scan.Application.model.ScanType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -12,46 +14,44 @@ public class GitHubScanService {
 
     private final WebClient.Builder webClientBuilder;
 
-    // Manually defined constructor (replaces @RequiredArgsConstructor)
     public GitHubScanService(WebClient.Builder webClientBuilder) {
         this.webClientBuilder = webClientBuilder;
     }
 
-    /**
-     * Perform scans by calling the appropriate GitHub endpoints.
-     * Combine results into one JSON string for storage (or store them in separate fields).
-     */
-    public String performScan(String pat, ScanEvent event) {
-        StringBuilder combinedJson = new StringBuilder();
-        combinedJson.append("{");
-        combinedJson.append("\"owner\": \"").append(event.getOwner()).append("\",");
-        combinedJson.append("\"repo\": \"").append(event.getRepo()).append("\",");
+    public JsonNode performScan(String pat, ScanEvent event) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            ObjectNode root = objectMapper.createObjectNode();
+            root.put("owner", event.getOwner());
+            root.put("repo", event.getRepo());
 
-        combinedJson.append("\"results\": {");
+            ObjectNode resultsNode = objectMapper.createObjectNode();
 
-        // If "ALL" is present, run all three. Otherwise, selectively run them.
-        if (event.getTypes().contains(ScanType.ALL) || event.getTypes().contains(ScanType.CODE_SCAN)) {
-            String codeScanJson = fetchCodeScanningAlerts(event.getOwner(), event.getRepo(), pat);
-            combinedJson.append("\"codeScanningAlerts\":").append(codeScanJson).append(",");
-        }
-        if (event.getTypes().contains(ScanType.ALL) || event.getTypes().contains(ScanType.DEPENDABOT)) {
-            String dependabotJson = fetchDependabotAlerts(event.getOwner(), event.getRepo(), pat);
-            combinedJson.append("\"dependabotAlerts\":").append(dependabotJson).append(",");
-        }
-        if (event.getTypes().contains(ScanType.ALL) || event.getTypes().contains(ScanType.SECRET_SCAN)) {
-            String secretScanJson = fetchSecretScanningAlerts(event.getOwner(), event.getRepo(), pat);
-            combinedJson.append("\"secretScanningAlerts\":").append(secretScanJson).append(",");
-        }
+            if (event.getTypes().contains(ScanType.ALL) || event.getTypes().contains(ScanType.CODE_SCAN)) {
+                String codeScanJson = fetchCodeScanningAlerts(event.getOwner(), event.getRepo(), pat);
+                JsonNode codeScanNode = objectMapper.readTree(codeScanJson);
+                resultsNode.set("codeScanningAlerts", codeScanNode);
+            }
 
-        // Remove trailing comma if it exists
-        if (combinedJson.charAt(combinedJson.length() - 1) == ',') {
-            combinedJson.deleteCharAt(combinedJson.length() - 1);
-        }
-        combinedJson.append("}}");
+            if (event.getTypes().contains(ScanType.ALL) || event.getTypes().contains(ScanType.DEPENDABOT)) {
+                String dependabotJson = fetchDependabotAlerts(event.getOwner(), event.getRepo(), pat);
+                JsonNode dependabotNode = objectMapper.readTree(dependabotJson);
+                resultsNode.set("dependabotAlerts", dependabotNode);
+            }
 
-        return combinedJson.toString();
+            if (event.getTypes().contains(ScanType.ALL) || event.getTypes().contains(ScanType.SECRET_SCAN)) {
+                String secretScanJson = fetchSecretScanningAlerts(event.getOwner(), event.getRepo(), pat);
+                JsonNode secretScanNode = objectMapper.readTree(secretScanJson);
+                resultsNode.set("secretScanningAlerts", secretScanNode);
+            }
+
+            root.set("results", resultsNode);
+            return root;
+
+        } catch (Exception e) {
+            return objectMapper.createObjectNode().put("error", "Scan failed");
+        }
     }
-
     private String fetchCodeScanningAlerts(String owner, String repo, String pat) {
         // GET /repos/{owner}/{repo}/code-scanning/alerts
         return webClientBuilder.build()

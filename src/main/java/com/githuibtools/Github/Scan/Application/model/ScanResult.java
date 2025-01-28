@@ -1,23 +1,27 @@
 package com.githuibtools.Github.Scan.Application.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-@Document(indexName = "scan-results") // You can choose a name
+@Document(indexName = "scan-results")
 public class ScanResult {
 
     @Id
-    private String id;                       // This can be generated or assigned
+    private String id;
     private String repo;
     private String owner;
     private List<ScanType> types;
     private List<ScanParameter> parameters;
-    private String rawResult;                // Could store raw JSON or a structured object
-    private Instant timestamp = Instant.now();
+    private Map<String, Object> results;
+//    private JsonNode results;
+//    private String rawResult;
+//    private Instant timestamp = Instant.now();
 
     // No-arguments constructor
     public ScanResult() {
@@ -29,18 +33,16 @@ public class ScanResult {
                       String owner,
                       List<ScanType> types,
                       List<ScanParameter> parameters,
-                      String rawResult,
-                      Instant timestamp) {
+                      Map<String,Object> results) {
         this.id = id;
         this.repo = repo;
         this.owner = owner;
         this.types = types;
         this.parameters = parameters;
-        this.rawResult = rawResult;
-        this.timestamp = timestamp;
+        this.results = results;
+//        this.timestamp = timestamp;
     }
 
-    // Getters and Setters
 
     public String getId() {
         return id;
@@ -81,22 +83,23 @@ public class ScanResult {
     public void setParameters(List<ScanParameter> parameters) {
         this.parameters = parameters;
     }
-
-    public String getRawResult() {
-        return rawResult;
-    }
-
-    public void setRawResult(String rawResult) {
-        this.rawResult = rawResult;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
-    }
+    public Map<String, Object> getResults() { return results; }
+    public void setResults(Map<String, Object> results) { this.results = results; }
+//    public JsonNode getResults() {
+//        return results;
+//    }
+//
+//    public void setResults(JsonNode results) {
+//        this.results = results;
+//    }
+//
+//    public Instant getTimestamp() {
+//        return timestamp;
+//    }
+//
+//    public void setTimestamp(Instant timestamp) {
+//        this.timestamp = timestamp;
+//    }
 
     // equals, hashCode, and toString
 
@@ -110,13 +113,13 @@ public class ScanResult {
                 && Objects.equals(owner, that.owner)
                 && Objects.equals(types, that.types)
                 && Objects.equals(parameters, that.parameters)
-                && Objects.equals(rawResult, that.rawResult)
-                && Objects.equals(timestamp, that.timestamp);
+                && Objects.equals(results, that.results);
+//                && Objects.equals(timestamp, that.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, repo, owner, types, parameters, rawResult, timestamp);
+        return Objects.hash(id, repo, owner, types, parameters, results);
     }
 
     @Override
@@ -127,8 +130,8 @@ public class ScanResult {
                 ", owner='" + owner + '\'' +
                 ", types=" + types +
                 ", parameters=" + parameters +
-                ", rawResult='" + rawResult + '\'' +
-                ", timestamp=" + timestamp +
+                ", results='" + results +
+//                ", timestamp=" + timestamp +
                 '}';
     }
 }

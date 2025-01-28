@@ -2,20 +2,15 @@ package com.githuibtools.Github.Scan.Application.model;
 
 import java.util.List;
 
-//lombok dependencies
-//@Data
-//@NoArgsConstructor
-//@AllArgsConstructor
 public class ScanEvent {
     private String repo;
     private String owner;
-    private List<ScanType> types;          // Might contain multiple types if combination
+    private List<ScanType> types;
     private List<ScanParameter> parameters;
 
     public ScanEvent() {
     }
 
-    // All-arguments constructor
     public ScanEvent(String repo, String owner, List<ScanType> types, List<ScanParameter> parameters) {
         this.repo = repo;
         this.owner = owner;
@@ -23,7 +18,6 @@ public class ScanEvent {
         this.parameters = parameters;
     }
 
-    // Getters and setters
     public String getRepo() {
         return repo;
     }

@@ -26,9 +26,7 @@ public class ElasticsearchConfig {
 
     @Bean
     public ElasticsearchClient elasticsearchClient(RestClient restClient) {
-        // Use JSON mapping from Jackson
-        RestClientTransport transport =
-                new RestClientTransport(restClient, new JacksonJsonpMapper());
+        RestClientTransport transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
         return new ElasticsearchClient(transport);
     }
 }

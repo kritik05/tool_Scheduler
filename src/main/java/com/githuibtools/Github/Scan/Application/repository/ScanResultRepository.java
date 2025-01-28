@@ -7,5 +7,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ScanResultRepository extends ElasticsearchRepository<ScanResult, String> {
-    // Spring Data Elasticsearch gives you query methods or you can define custom ones
 }

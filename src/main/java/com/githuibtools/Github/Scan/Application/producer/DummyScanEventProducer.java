@@ -19,23 +19,23 @@ public class DummyScanEventProducer {
     @Value("${app.kafka.topics.ingestion}")
     private String ingestionTopic;
 
-    // Manually define the constructor instead of using Lombok @RequiredArgsConstructor
     public DummyScanEventProducer(KafkaTemplate<String, ScanEvent> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    //This method will run exactly once during application startup.
+    // It produces a dummy event for testing or demonstration purposes.
+    // In a real-world scenario, you might trigger production of events based on external actions.
     @PostConstruct
     public void produceDummyEvent() {
-        // Create a dummy ScanEvent
         ScanEvent event = new ScanEvent();
         event.setRepo("juice-shop");
         event.setOwner("kritik05");
         event.setTypes(List.of(ScanType.ALL));
+//        event.setTypes(List.of(ScanType.DEPENDABOT));
         event.setParameters(List.of(ScanParameter.FAST, ScanParameter.DEEP));
 
-        // Send it to Kafka
         kafkaTemplate.send(ingestionTopic, event);
 
-        // For demonstration, we do this once at startup.
     }
 }
