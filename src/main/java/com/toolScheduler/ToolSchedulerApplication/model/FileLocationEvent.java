@@ -2,10 +2,10 @@ package com.toolScheduler.ToolSchedulerApplication.model;
 
 public class FileLocationEvent {
 
-    private String filePath;  // Full path to the JSON file in FS
+    private String filePath;
     private String owner;
     private String repo;
-    private String toolName;  // "codescan", "dependabot", or "secretscan"
+    private String toolName;
 
     public FileLocationEvent() {}
 

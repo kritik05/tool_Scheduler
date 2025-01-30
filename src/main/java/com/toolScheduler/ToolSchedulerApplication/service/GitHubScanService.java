@@ -38,6 +38,7 @@ public class GitHubScanService {
                 .onErrorReturn("[]")
                 .block();
     }
+
     private String fetchDependabotAlerts(String owner, String repo, String pat) {
         return webClientBuilder.build()
                 .get()

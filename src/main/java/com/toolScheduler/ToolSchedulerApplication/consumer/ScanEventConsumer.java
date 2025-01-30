@@ -17,8 +17,9 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 public class ScanEventConsumer {
@@ -74,8 +75,11 @@ public class ScanEventConsumer {
                 }
             }
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+            String timestamp = LocalDateTime.now().format(formatter);
+
             String fileName = "scan_" + event.getOwner() + "_" + event.getRepo()
-                    + "_" + UUID.randomUUID() + ".json";
+                    + "_" + timestamp + ".json";
             String filePath = folderPath + "/" + fileName;
 
             try (FileWriter fw = new FileWriter(filePath)) {
