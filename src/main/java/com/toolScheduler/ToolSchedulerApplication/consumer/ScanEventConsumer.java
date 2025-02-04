@@ -1,5 +1,6 @@
 package com.toolScheduler.ToolSchedulerApplication.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.toolScheduler.ToolSchedulerApplication.model.ScanType;
 import com.toolScheduler.ToolSchedulerApplication.model.User;
 import com.toolScheduler.ToolSchedulerApplication.model.FileLocationEvent;
@@ -45,11 +46,10 @@ public class ScanEventConsumer {
 
     @KafkaListener(topics = "${app.kafka.topics.scan}", groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "scanEventListenerContainerFactory")
-    public void consumeScanEvent(ConsumerRecord<String, ScanEvent> record) {
+    public void consumeScanEvent(ConsumerRecord<String, ScanEvent> record) throws JsonProcessingException {
         ScanEvent event = record.value();
         LOGGER.info("Received ScanEvent: {}", event);
 
-        // 1) Find credential
         User cred = userRepository.findByOwnerAndRepo(event.getOwner(), event.getRepo());
         if (cred == null) {
             LOGGER.error("No credential found for {}/{}", event.getOwner(), event.getRepo());
