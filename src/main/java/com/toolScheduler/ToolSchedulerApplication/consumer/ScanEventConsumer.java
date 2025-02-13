@@ -2,10 +2,10 @@ package com.toolScheduler.ToolSchedulerApplication.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.toolScheduler.ToolSchedulerApplication.model.ScanType;
-import com.toolScheduler.ToolSchedulerApplication.model.User;
+import com.toolScheduler.ToolSchedulerApplication.model.Tenant;
 import com.toolScheduler.ToolSchedulerApplication.model.FileLocationEvent;
 import com.toolScheduler.ToolSchedulerApplication.model.ScanEvent;
-import com.toolScheduler.ToolSchedulerApplication.repository.UserRepository;
+import com.toolScheduler.ToolSchedulerApplication.repository.TenantRepository;
 import com.toolScheduler.ToolSchedulerApplication.service.GitHubScanService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
@@ -21,12 +21,13 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class ScanEventConsumer {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScanEventConsumer.class);
 
-    private final UserRepository userRepository;
+    private final TenantRepository tenantRepository;
     private final GitHubScanService gitHubScanService;
     private final KafkaTemplate<String, FileLocationEvent> fileLocationProducer;
 
@@ -36,10 +37,10 @@ public class ScanEventConsumer {
     @Value("${app.kafka.topics.filelocation}")
     private String fileLocationTopic;
 
-    public ScanEventConsumer(UserRepository userRepository,
+    public ScanEventConsumer(TenantRepository tenantRepository,
                              GitHubScanService gitHubScanService,
                              KafkaTemplate<String, FileLocationEvent> fileLocationProducer) {
-        this.userRepository = userRepository;
+        this.tenantRepository = tenantRepository;
         this.gitHubScanService = gitHubScanService;
         this.fileLocationProducer = fileLocationProducer;
     }
@@ -50,21 +51,21 @@ public class ScanEventConsumer {
         ScanEvent event = record.value();
         LOGGER.info("Received ScanEvent: {}", event);
 
-        User cred = userRepository.findByOwnerAndRepo(event.getOwner(), event.getRepo());
-        if (cred == null) {
-            LOGGER.error("No credential found for {}/{}", event.getOwner(), event.getRepo());
+        Optional<Tenant> optionalTenant = tenantRepository.findById(event.getTenantId());
+        if (optionalTenant.isEmpty()) {
+            LOGGER.error("No tenant found with ID {}", event.getTenantId());
             return;
         }
-
+        Tenant tenant = optionalTenant.get();
         List<ScanType> effectiveTypes = expandTypes(event.getTypes());
 
         for (ScanType toolType : effectiveTypes) {
 
-            String rawJson = gitHubScanService.performSingleToolScan(cred.getPat(), event, toolType);
+            String rawJson = gitHubScanService.performSingleToolScan(tenant.getPat(),tenant.getOwner(),tenant.getRepo(), toolType);
 
             String toolFolder = mapToolFolder(toolType);
 
-            String folderPath = "/Users/kritik.aggarwal/Desktop/scan/" + toolFolder + "/" + event.getOwner() + "/" + event.getRepo();
+            String folderPath = "/Users/kritik.aggarwal/Desktop/scan/"+ tenant.getTenant_name()+ "/" + toolFolder;
 
             File dir = new File(folderPath);
             if (!dir.exists()) {
@@ -78,8 +79,7 @@ public class ScanEventConsumer {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
             String timestamp = LocalDateTime.now().format(formatter);
 
-            String fileName = "scan_" + event.getOwner() + "_" + event.getRepo()
-                    + "_" + timestamp + ".json";
+            String fileName = "scan_"+ timestamp + ".json";
             String filePath = folderPath + "/" + fileName;
 
             try (FileWriter fw = new FileWriter(filePath)) {
@@ -90,7 +90,7 @@ public class ScanEventConsumer {
                 continue;
             }
 
-            FileLocationEvent fle = new FileLocationEvent(filePath, event.getOwner(), event.getRepo(), toolFolder);
+            FileLocationEvent fle = new FileLocationEvent(filePath, toolFolder, tenant.getFindingindex());
             fileLocationProducer.send(fileLocationTopic, fle);
             LOGGER.info("Published FileLocationEvent => [filePath={}, toolName={}]", filePath, toolFolder);
         }
