@@ -5,10 +5,10 @@ import java.util.List;
 
 public class ScanEvent {
     private Integer tenantId; // new, required
-    private List<ScanType> types;
+    private String types;
 
 
-    public ScanEvent(Integer tenantId, List<ScanType> types) {
+    public ScanEvent(Integer tenantId, String types) {
         this.tenantId = tenantId;
         this.types = types;
     }
@@ -21,11 +21,11 @@ public class ScanEvent {
         this.tenantId = tenantId;
     }
 
-    public List<ScanType> getTypes() {
+    public String getTypes() {
         return types;
     }
 
-    public void setTypes(List<ScanType> types) {
+    public void setTypes(String types) {
         this.types = types;
     }
 

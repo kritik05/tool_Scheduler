@@ -15,13 +15,13 @@ public class GitHubScanService {
         this.webClientBuilder = webClientBuilder;
     }
 
-    public String performSingleToolScan(String pat,String owner,String repo, ScanType toolType) throws JsonProcessingException {
+    public String performSingleToolScan(String pat,String owner,String repo, String toolType) throws JsonProcessingException {
         switch (toolType) {
-            case CODE_SCAN:
+            case "CODESCAN":
                 return fetchScanningAlerts(owner, repo, pat,"code-scanning");
-            case DEPENDABOT:
+            case "DEPENDABOT":
                 return fetchScanningAlerts(owner, repo, pat,"dependabot");
-            case SECRET_SCAN:
+            case "SECRETSCAN":
                 return fetchScanningAlerts(owner, repo, pat,"secret-scanning");
             default:
                 return "{}";

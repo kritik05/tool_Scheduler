@@ -23,8 +23,9 @@ spring:
 app:
   kafka:
     topics:
-      scan: "tool-scan-ingestion"
-      filelocation: "file-location-topic"
+      toolscheduler: "tool-scheduler"
+      parserjfc: "parse-jfc"
+      ack: "ack-topic"
 
 
 
