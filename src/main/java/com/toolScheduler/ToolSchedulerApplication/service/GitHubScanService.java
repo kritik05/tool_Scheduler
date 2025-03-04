@@ -1,8 +1,8 @@
 package com.toolScheduler.ToolSchedulerApplication.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.toolScheduler.ToolSchedulerApplication.model.ScanEvent;
-import com.toolScheduler.ToolSchedulerApplication.model.ScanType;
+//import com.toolScheduler.ToolSchedulerApplication.model.ScanEvent;
+//import com.toolScheduler.ToolSchedulerApplication.model.ScanType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 

@@ -24,7 +24,7 @@ app:
   kafka:
     topics:
       toolscheduler: "tool-scheduler"
-      parserjfc: "parse-jfc"
+      jfcunified: "jfc-common-jobs"
       ack: "ack-topic"
 
 

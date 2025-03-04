@@ -1,7 +1,5 @@
 package com.toolScheduler.ToolSchedulerApplication.config;
 import com.toolScheduler.ToolSchedulerApplication.event.ScanRequestEvent;
-import com.toolScheduler.ToolSchedulerApplication.model.FileLocationEvent;
-import com.toolScheduler.ToolSchedulerApplication.model.ScanEvent;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -24,6 +22,19 @@ public class KafkaConfig {
 
     private static final String BOOTSTRAP = "localhost:9092";
 
+    @Bean
+    public ProducerFactory<String, String> parseEventProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        // Use StringSerializer for value as well
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+    @Bean
+    public KafkaTemplate<String, String> parseEventKafkaTemplate() {
+        return new KafkaTemplate<>(parseEventProducerFactory());
+    }
     @Bean
     public ProducerFactory<String, Object> genericProducerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -59,6 +70,18 @@ public class KafkaConfig {
                 new JsonDeserializer<>(Object.class)
         );
     }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+
+        // If you want manual ack:
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
+        return factory;
+    }
+
     @Bean
     public ConsumerFactory<String, ScanRequestEvent> scanRequestEventConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -72,7 +95,6 @@ public class KafkaConfig {
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.toolScheduler.ToolSchedulerApplication.event.ScanRequestEvent");
 
         JsonDeserializer<ScanRequestEvent> deserializer = new JsonDeserializer<>(ScanRequestEvent.class);
-//        deserializer.addTrustedPackages("*");
 
         return new DefaultKafkaConsumerFactory<>(
                 props,
@@ -87,46 +109,5 @@ public class KafkaConfig {
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(scanRequestEventConsumerFactory());
         return factory;
-    }
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, Object> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-
-        // If you want manual ack:
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
-        return factory;
-    }
-
-    @Bean
-    public ProducerFactory<String, ScanEvent> scanEventProducerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
-        return new DefaultKafkaProducerFactory<>(props);
-    }
-
-    @Bean
-    public KafkaTemplate<String, ScanEvent> scanEventKafkaTemplate() {
-        return new KafkaTemplate<>(scanEventProducerFactory());
-    }
-
-    @Bean
-    public ProducerFactory<String, FileLocationEvent> fileLocationProducerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP);
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(JsonSerializer.ADD_TYPE_INFO_HEADERS, false);
-        return new DefaultKafkaProducerFactory<>(props);
-    }
-
-    @Bean
-    public KafkaTemplate<String, FileLocationEvent> fileLocationKafkaTemplate() {
-        return new KafkaTemplate<>(fileLocationProducerFactory());
     }
 }
